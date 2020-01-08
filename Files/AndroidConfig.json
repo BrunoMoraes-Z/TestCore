@@ -1,0 +1,10 @@
+{
+  "deviceName": "emulator-5554",
+  "platformName": "Android",
+  "appPackage": "com.google.android.calculator",
+  "appActivity": "com.android.calculator2.Calculator",
+  "autoGrantPermissions": true,
+  "printPageSourceOnFindFailure": true,
+  "adbExecTimeout": 60000,
+  "newCommandTimeout": 0,
+}
