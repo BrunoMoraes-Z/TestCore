@@ -63,9 +63,7 @@ public class Reporter {
                     testName = description.getClassName();
                 }
                 writeReport(description.getDisplayName() + " success! <br>");
-            } catch (Exception e1) {
-                System.out.println(e1.getMessage());
-            }
+            } catch (Exception e1) { }
         }
 
         @Override
@@ -74,19 +72,15 @@ public class Reporter {
                 if (testName != description.getClassName()) {
                     testName = description.getClassName();
                 }
-                writeReport(description.getDisplayName() + " "+ e.getClass().getSimpleName());
-            } catch (Exception e2) {
-                System.out.println(e2.getMessage());
-            }
+                writeReport(description.getDisplayName() + " " + e.getMessage());
+            } catch (Exception e2) { }
         }
     };
 
     public static void writeReport(String msg) {
         try {
             writer.write(msg);
-        } catch (IOException e) {
-
-        }
+        } catch (IOException e) { }
     }
 
     private static void replaceInFile(String var, String value) {

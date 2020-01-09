@@ -15,16 +15,11 @@ import java.util.Set;
 
 public class WebTest extends TestBase {
 
-    public void a() {
-    }
-
 	@Test
 	public void chrome_search() {
 		new TestBase(PlatformType.CHROME, null);
-        System.out.println(Utils.geraCNPJ());
-        System.out.println(Utils.geraCPF());
-        System.out.println(Utils.gerarRg());
         navigate("https://google.com");
+        waitPageContains("Google", 5);
         Element search = getElement(By.name("q"));
         search.sendKeys("amazon" + Keys.RETURN);
     }

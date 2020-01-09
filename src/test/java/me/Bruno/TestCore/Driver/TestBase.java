@@ -61,6 +61,27 @@ public class TestBase extends Reporter {
 		new TestBase(Type, customPath);
 	}
 
+	@Before
+	public void iniciar() {
+		sleep(2000);
+
+	}
+
+	@After
+	public void finalizar() {
+		sleep(2000);
+		try {
+			if (type != PlatformType.WINIUM) {
+				driver.quit();
+			}
+			driver = null;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		killProcess();
+		sleep(2000);
+	}
+
 	public TestBase(PlatformType Type, String customPath) {
 		if (type != null) {
 			killProcess();
@@ -149,143 +170,7 @@ public class TestBase extends Reporter {
 		actions = new Actions(driver);
 	}
 
-	@Before
-	public void iniciar() {
-		sleep(2000);
-
-	}
-
-	@After
-	public void finalizar() {
-		sleep(2000);
-		try {
-			if (type != PlatformType.WINIUM) {
-				driver.quit();
-			}
-			driver = null;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		killProcess();
-		sleep(2000);
-	}
-
-	public static boolean navigate(String url) {
-		if (Arrays.asList(new PlatformType[] { PlatformType.OPERA, PlatformType.CHROME, PlatformType.EDGE, PlatformType.FIREFOX }).contains(type)) {
-			driver.navigate().to(url);
-			driver.manage().window().maximize();
-			sleep(500);
-			return true;
-		}
-		return false;
-	}
-
-	// public static Element getElement(By by) {
-	// 	Date future = new Date();
-	// 	future.setSeconds(future.getSeconds() + timeOut);
-
-	// 	do {
-	// 		try {
-	// 			WebElement e = driver.findElement(by);
-	// 			if (e != null && e.isEnabled()) {
-	// 				return new Element(by, e);
-	// 			} else {
-	// 				sleep(166);
-	// 			}
-	// 		} catch (NoSuchElementException e) {
-	// 			sleep(166);
-	// 		}
-	// 	} while (!new Date().after(future));
-	// 	System.out.println("could not find locator element: " + by);
-	// 	return null;
-	// }
-
-	public static Element getElement(By by) {
-		FluentWait<WebDriver> wait = new FluentWait<WebDriver>(driver);
-		wait.withTimeout(60, TimeUnit.SECONDS).pollingEvery(100, TimeUnit.MILLISECONDS);
-		wait.ignoring(NoSuchElementException.class).ignoring(NoAlertPresentException.class);
-		wait.ignoring(ElementNotVisibleException.class).ignoring(ElementNotInteractableException.class);
-		wait.ignoring(ElementNotSelectableException.class);
-
-		try {
-			return new Element(by, wait.until(new Function<WebDriver, WebElement> () {
-				public WebElement apply(WebDriver driver) {
-					return driver.findElement(by);
-				}
-			}));
-		} catch (Exception e) {
-			return null;
-		}
-	}
-
-	public static ArrayList<Element> getElements(By by) {
-		FluentWait<WebDriver> wait = new FluentWait<WebDriver>(driver);
-		wait.withTimeout(60, TimeUnit.SECONDS).pollingEvery(100, TimeUnit.MILLISECONDS);
-		wait.ignoring(NoSuchElementException.class).ignoring(NoAlertPresentException.class);
-		wait.ignoring(ElementNotVisibleException.class).ignoring(ElementNotInteractableException.class);
-		wait.ignoring(ElementNotSelectableException.class);
-		
-		try {
-			ArrayList<Element> list = new ArrayList<>();
-			int attempts = 5;
-			do {
-				List<WebElement> els = wait.until(new Function<WebDriver, List<WebElement>>() {
-					public List<WebElement> apply(WebDriver driver) {
-						return driver.findElements(by);
-					}
-				});
-				if (els != null && els.size() > 0) {
-					for (WebElement e : els) {
-						if (e != null && e.isDisplayed()) {
-							for (WebElement el : els) {
-								list.add(new Element(by, el));
-							}
-							break;
-						}
-					}
-				} else {
-					attempts--;
-					if (attempts <= 0) {
-						break;
-					}
-				}
-			} while (list.isEmpty());
-			return list;
-		} catch (Exception e) {
-			return null;
-		}
-	}
-
-	// public static ArrayList<Element> getElements(By by) {
-	// 	ArrayList<Element> list = new ArrayList<>();
-	// 	Date future = new Date();
-	// 	future.setSeconds(future.getSeconds() + timeOut);
-
-	// 	do {
-	// 		try {
-	// 			List<WebElement> elements = driver.findElements(by);
-	// 			if (elements != null && elements.size() > 0) {
-	// 				for (WebElement e : elements) {
-	// 					if (e != null && e.isEnabled()) {
-	// 						for (WebElement e1 : elements) {
-	// 							list.add(new Element(by, e1));
-	// 						}
-	// 					}
-	// 				}
-	// 				return list;
-	// 			} else {
-	// 				sleep(166);
-	// 			}
-	// 		} catch (NoSuchElementException e) {
-	// 			System.out.println("TESTE");
-	// 			sleep(166);
-	// 		}
-	// 	} while (!new Date().after(future));
-	// 	System.out.println("could not find locator element: " + by);
-	// 	return null;
-	// }
-
-	private static String getPath(PlatformType type) {
+	private String getPath(PlatformType type) {
 		switch (type) {
 		case WINIUM:
 			return driversPath + "Winium.Desktop.Driver.exe";
@@ -299,35 +184,6 @@ public class TestBase extends Reporter {
 			break;
 		}
 		return null;
-	}
-
-	public static void setTimeOut(int timeOutSeconds) {
-		timeOut = timeOutSeconds;
-	}
-
-	public static void checkPoint(boolean condition, WebElement element, String message) {
-		checkPoint(condition, element, message, null);
-	}
-
-	public static void checkPoint(boolean condition, WebElement element, String message, Element frame) {
-		timeOut2 = timeOut;
-		String print = takePrint(element, frame);
-		if (print != null) {
-			String img = "<img src='data:image/jpg;base64, " + print + "' />";
-			String step = logger != null ? "<h2 id='#state#'>" + logger + "</h2>" : "";
-			String msg = message != null ? "<p>" + message + "</p>" : "";
-			String toFile = "<div id='#color#'>" + step + msg + img + "</div>";
-			if (Arrays.asList(new PlatformType[] { PlatformType.WINIUM, PlatformType.ANDROID }).contains(type)) {
-				if (type == PlatformType.WINIUM) {
-					createEvidence(toFile, condition);
-				} else {
-					createEvidence(toFile.replace(img, "<img style='height:580px' src='data:image/jpg;base64, " + print + "' />"), condition);
-				}
-			} else {
-				createEvidence(toFile.replace(img, "<img style='width:100%;' src='data:image/jpg;base64, " + print + "' />"), condition);
-			}
-		}
-		logger = null;
 	}
 
 	private static void createEvidence(String message, boolean condition) {
@@ -384,20 +240,6 @@ public class TestBase extends Reporter {
 		}
 	}
 
-	public static Alert getAlert() {
-		Date future = new Date();
-		future.setSeconds(future.getSeconds() + timeOut);
-		do {
-			Alert a = driver.switchTo().alert();
-			if (a != null) {
-				return a;
-			} else {
-				sleep(166);
-			}
-		} while (!new Date().after(future));
-		return driver.switchTo().alert();
-	}
-
 	private static String print() {
 		BufferedImage image = null;
 		try {
@@ -409,14 +251,6 @@ public class TestBase extends Reporter {
 			return java.util.Base64.getEncoder().encodeToString(os.toByteArray());
 		} catch (IOException e) {
 			return null;
-		}
-	}
-
-	public static void sleep(int milis) {
-		try {
-			Thread.sleep(milis);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -463,13 +297,6 @@ public class TestBase extends Reporter {
 		}
 	}
 
-	public static Robot getSimulator() {
-		try {
-			return new Robot();
-		} catch (Exception e) {}
-		return null;
-	}
-
 	private static JSONObject read(String fileName) {
 		String path = System.getProperty("user.dir") + "\\Files\\" + fileName;
 		JSONParser parser = new JSONParser();
@@ -480,5 +307,200 @@ public class TestBase extends Reporter {
 		}
 		return null;
 	}
+
+	private static FluentWait<WebDriver> getWait(int time, int every) {
+		FluentWait<WebDriver> wait = new FluentWait<WebDriver>(driver);
+		wait.withTimeout(time < 1 ? 60 : time, TimeUnit.SECONDS).pollingEvery(every < 0 ? 100 : every, TimeUnit.MILLISECONDS);
+		wait.ignoring(NoSuchElementException.class).ignoring(NoAlertPresentException.class);
+		wait.ignoring(ElementNotVisibleException.class).ignoring(ElementNotInteractableException.class);
+		wait.ignoring(ElementNotSelectableException.class);
+		return wait;
+	}
+
+	public static void setTimeOut(int timeOutSeconds) {
+		timeOut = timeOutSeconds;
+	}
+
+	public static void checkPoint(boolean condition, WebElement element, String message) {
+		checkPoint(condition, element, message, null);
+	}
+
+	public static void checkPoint(boolean condition, WebElement element, String message, Element frame) {
+		timeOut2 = timeOut;
+		String print = takePrint(element, frame);
+		if (print != null) {
+			String img = "<img src='data:image/jpg;base64, " + print + "' />";
+			String step = logger != null ? "<h2 id='#state#'>" + logger + "</h2>" : "";
+			String msg = message != null ? "<p>" + message + "</p>" : "";
+			String toFile = "<div id='#color#'>" + step + msg + img + "</div>";
+			if (Arrays.asList(new PlatformType[] { PlatformType.WINIUM, PlatformType.ANDROID }).contains(type)) {
+				if (type == PlatformType.WINIUM) {
+					createEvidence(toFile, condition);
+				} else {
+					createEvidence(toFile.replace(img, "<img style='height:580px' src='data:image/jpg;base64, " + print + "' />"), condition);
+				}
+			} else {
+				createEvidence(toFile.replace(img, "<img style='width:100%;' src='data:image/jpg;base64, " + print + "' />"), condition);
+			}
+		}
+		logger = null;
+	}
+
+	public static Alert getAlert() {
+		Date future = new Date();
+		future.setSeconds(future.getSeconds() + timeOut);
+		do {
+			Alert a = driver.switchTo().alert();
+			if (a != null) {
+				return a;
+			} else {
+				sleep(166);
+			}
+		} while (!new Date().after(future));
+		return driver.switchTo().alert();
+	}
+
+	public static void sleep(int milis) {
+		try {
+			Thread.sleep(milis);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static Robot getSimulator() {
+		try {
+			return new Robot();
+		} catch (Exception e) {}
+		return null;
+	}
+
+	public static boolean navigate(String url) {
+		if (Arrays.asList(new PlatformType[] { PlatformType.OPERA, PlatformType.CHROME, PlatformType.EDGE, PlatformType.FIREFOX }).contains(type)) {
+			driver.navigate().to(url);
+			driver.manage().window().maximize();
+			sleep(500);
+			checkPoint(true, null, "");
+			return true;
+		}
+		return false;
+	}
+
+	public static void waitPageContains(String message, int time) {
+		By by = By.xpath("//*[contains(text(), '" + message + "')]");
+		List<WebElement> list = getWait(time, 100).until(new Function<WebDriver, List<WebElement>>() {
+			public List<WebElement> apply(WebDriver driver) {
+				return driver.findElements(by);
+			}
+		});
+		if (list == null || list.isEmpty()) {
+			Assert.fail("unable to find the message: " + message);
+		}
+	}
+
+	public static void waitPageContainsElement(By by, int time) {
+		List<WebElement> list = getWait(time, 100).until(new Function<WebDriver, List<WebElement>>() {
+			public List<WebElement> apply(WebDriver driver) {
+				return driver.findElements(by);
+			}
+		});
+		if (list == null || list.isEmpty()) {
+			Assert.fail("unable to find the element: " + by);
+		}
+	}
+
+	public static Element getElement(By by) {
+		try {
+			return new Element(by, getWait(30, 100).until(new Function<WebDriver, WebElement> () {
+				public WebElement apply(WebDriver driver) {
+					return driver.findElement(by);
+				}
+			}));
+		} catch (Exception e) {
+			Assert.fail("unable to find the element: " + by);
+			return null;
+		}
+	}
+
+	public static ArrayList<Element> getElements(By by) {
+		try {
+			ArrayList<Element> list = new ArrayList<>();
+			int attempts = 5;
+			do {
+				List<WebElement> els = getWait(30, 100).until(new Function<WebDriver, List<WebElement>>() {
+					public List<WebElement> apply(WebDriver driver) {
+						return driver.findElements(by);
+					}
+				});
+				if (els != null && els.size() > 0) {
+					for (WebElement e : els) {
+						if (e != null && e.isDisplayed()) {
+							for (WebElement el : els) {
+								list.add(new Element(by, el));
+							}
+							break;
+						}
+					}
+				} else {
+					attempts--;
+					if (attempts <= 0) {
+						break;
+					}
+				}
+			} while (list.isEmpty());
+			return list;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	// public static Element getElement(By by) {
+	// 	Date future = new Date();
+	// 	future.setSeconds(future.getSeconds() + timeOut);
+
+	// 	do {
+	// 		try {
+	// 			WebElement e = driver.findElement(by);
+	// 			if (e != null && e.isEnabled()) {
+	// 				return new Element(by, e);
+	// 			} else {
+	// 				sleep(166);
+	// 			}
+	// 		} catch (NoSuchElementException e) {
+	// 			sleep(166);
+	// 		}
+	// 	} while (!new Date().after(future));
+	// 	System.out.println("could not find locator element: " + by);
+	// 	return null;
+	// }
+
+	// public static ArrayList<Element> getElements(By by) {
+	// 	ArrayList<Element> list = new ArrayList<>();
+	// 	Date future = new Date();
+	// 	future.setSeconds(future.getSeconds() + timeOut);
+
+	// 	do {
+	// 		try {
+	// 			List<WebElement> elements = driver.findElements(by);
+	// 			if (elements != null && elements.size() > 0) {
+	// 				for (WebElement e : elements) {
+	// 					if (e != null && e.isEnabled()) {
+	// 						for (WebElement e1 : elements) {
+	// 							list.add(new Element(by, e1));
+	// 						}
+	// 					}
+	// 				}
+	// 				return list;
+	// 			} else {
+	// 				sleep(166);
+	// 			}
+	// 		} catch (NoSuchElementException e) {
+	// 			System.out.println("TESTE");
+	// 			sleep(166);
+	// 		}
+	// 	} while (!new Date().after(future));
+	// 	System.out.println("could not find locator element: " + by);
+	// 	return null;
+	// }
 
 }
