@@ -16,7 +16,7 @@ public enum TestType {
     ANDROID(null),
     IOS(null);
 
-    private String driverName;
+    private final String driverName;
 
     TestType(String driverName) {
         this.driverName = driverName;

@@ -8,15 +8,15 @@ import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.opera.OperaDriver;
+import org.testng.annotations.*;
 
-public class TestBase {
+public abstract class TestBase {
 
-    public static void main(String[] args) {
+    private static TestType type = TestType.WEB_EDGE;
+
+    public TestBase() {
         String path = Utils.getProperty("pathDriver");
-
         WebDriver driver = null;
-
-        TestType type = TestType.WEB_EDGE;
 
         switch (type) {
             case WEB_CHROME:
@@ -39,12 +39,33 @@ public class TestBase {
                 break;
         }
 
-        if (TestType.isWeb(type)) {
+        if (TestType.isWeb(type) && driver != null) {
             if (Boolean.parseBoolean(Utils.getProperty("maximize"))) {
                 driver.manage().window().maximize();
             }
             driver.get(Utils.getProperty("URL"));
         }
     }
+
+    @BeforeSuite
+    public void suiteSetup() {
+        System.out.println("suite setup");
+    }
+
+    @BeforeMethod
+    public void testSetup() {
+        System.out.println("test setup");
+    }
+
+    @AfterSuite
+    public void suiteTeardown() {
+        System.out.println("suite teardown");
+    }
+
+    @AfterMethod
+    public void testTeardown() {
+        System.out.println("test teardown");
+    }
+
 
 }
