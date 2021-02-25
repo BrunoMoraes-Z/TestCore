@@ -25,7 +25,7 @@ public class Test_temp {
         DesiredCapabilities caps = new DesiredCapabilities();
 
 //        caps.setCapability("platformName", "Android");
-//        caps.setCapability("deviceName", "ZY222TLSKC");
+        caps.setCapability("deviceName", "ZY222TLSKC");
         caps.setCapability("appPackage", "com.example.git_explorer");
         caps.setCapability("appActivity", "com.example.git_explorer.MainActivity");
 //        caps.setCapability("autoGrantPermissions", true);
